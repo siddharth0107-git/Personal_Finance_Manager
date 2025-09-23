@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
 import { 
   Wallet, CreditCard, TrendingDown, 
   Menu, User, BarChart2, History, FileText, 
@@ -6,8 +7,8 @@ import {
   ArrowRightLeft, LineChart, Calculator, Bell,
   DollarSign, PieChart, Shield, AlertCircle,
   Banknote, Building, ShoppingBag, Coffee, Car,
-  Briefcase, Gift, Heart, Home, Laptop, X, Trash2,
-  Check, XCircle, Book
+  Briefcase, Gift, Heart, Home, Laptop, X, Trash2, 
+  Check, XCircle, Book, Target, Repeat, Download
 } from 'lucide-react';
 import { PieChart as RechartsChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 import TransactionForm from './components/TransactionForm';
@@ -17,10 +18,23 @@ import StatCard from './components/StatCard';
 import WalletTransferForm from './components/WalletTransferForm';
 import TopCompanies from './components/TopCompanies';
 import ProfilePage from './components/Profile/ProfilePage';
+import GoalTracker from './components/Goals/GoalTracker';
+import RecurringTransactions from './components/Recurring/RecurringTransactions';
+import BudgetManager from './components/Budget/BudgetManager';
+import CashFlowForecast from './components/CashFlow/CashFlowForecast';
+import DataExport from './components/Export/DataExport';
 import { Transaction, NavItem } from './types';
+import { Goal, RecurringTransaction, Budget, Loan } from './types/extended';
+import { addDays, addWeeks, addMonths, addYears, isAfter } from 'date-fns';
+import toast from 'react-hot-toast';
 
 const navItems: NavItem[] = [
   { icon: User, label: 'Profile' },
+  { icon: Target, label: 'Goals' },
+  { icon: Repeat, label: 'Recurring' },
+  { icon: PieChart, label: 'Budgets' },
+  { icon: TrendingUp, label: 'Forecast' },
+  { icon: Download, label: 'Export' },
   { icon: LineChart, label: 'Stock Market' },
   { icon: History, label: 'History' },
   { icon: Shield, label: 'Security' },
@@ -304,6 +318,11 @@ export default function App() {
   const [showWalletForm, setShowWalletForm] = useState(false);
   const [showStockMarket, setShowStockMarket] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showGoals, setShowGoals] = useState(false);
+  const [showRecurring, setShowRecurring] = useState(false);
+  const [showBudgets, setShowBudgets] = useState(false);
+  const [showForecast, setShowForecast] = useState(false);
+  const [showExport, setShowExport] = useState(false);
   const [notifications, setNotifications] = useState<string[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showCategoryPieChart, setShowCategoryPieChart] = useState(false);
@@ -311,6 +330,10 @@ export default function App() {
   const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState(false);
 
   const [transactions, setTransactions] = useState<Transaction[]>(generateDemoTransactions());
+  const [goals, setGoals] = useState<Goal[]>([]);
+  const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [loans, setLoans] = useState<Loan[]>([]);
   const [balance, setBalance] = useState(150000);
   const [walletBalance, setWalletBalance] = useState(45000);
 
@@ -473,6 +496,16 @@ export default function App() {
   const handleNavItemClick = (label: string) => {
     if (label === 'Profile') {
       setShowProfile(true);
+    } else if (label === 'Goals') {
+      setShowGoals(true);
+    } else if (label === 'Recurring') {
+      setShowRecurring(true);
+    } else if (label === 'Budgets') {
+      setShowBudgets(true);
+    } else if (label === 'Forecast') {
+      setShowForecast(true);
+    } else if (label === 'Export') {
+      setShowExport(true);
     } else if (label === 'Stock Market') {
       setShowStockMarket(true);
     } else if (label === 'Logout') {
@@ -480,6 +513,128 @@ export default function App() {
     }
     setIsNavOpen(false);
   };
+
+  // Goal management functions
+  const handleAddGoal = (goalData: Omit<Goal, 'id' | 'createdAt'>) => {
+    const newGoal: Goal = {
+      ...goalData,
+      id: Date.now().toString(),
+      createdAt: new Date()
+    };
+    setGoals(prev => [...prev, newGoal]);
+  };
+
+  const handleUpdateGoal = (id: string, updates: Partial<Goal>) => {
+    setGoals(prev => prev.map(goal => 
+      goal.id === id ? { ...goal, ...updates } : goal
+    ));
+  };
+
+  const handleDeleteGoal = (id: string) => {
+    setGoals(prev => prev.filter(goal => goal.id !== id));
+  };
+
+  // Recurring transaction functions
+  const calculateNextDueDate = (startDate: Date, frequency: string): Date => {
+    const now = new Date();
+    let nextDate = new Date(startDate);
+
+    while (nextDate <= now) {
+      switch (frequency) {
+        case 'daily':
+          nextDate = addDays(nextDate, 1);
+          break;
+        case 'weekly':
+          nextDate = addWeeks(nextDate, 1);
+          break;
+        case 'monthly':
+          nextDate = addMonths(nextDate, 1);
+          break;
+        case 'yearly':
+          nextDate = addYears(nextDate, 1);
+          break;
+      }
+    }
+
+    return nextDate;
+  };
+
+  const handleAddRecurring = (recurringData: Omit<RecurringTransaction, 'id' | 'nextDueDate' | 'lastProcessed'>) => {
+    const newRecurring: RecurringTransaction = {
+      ...recurringData,
+      id: Date.now().toString(),
+      nextDueDate: calculateNextDueDate(recurringData.startDate, recurringData.frequency)
+    };
+    setRecurringTransactions(prev => [...prev, newRecurring]);
+  };
+
+  const handleUpdateRecurring = (id: string, updates: Partial<RecurringTransaction>) => {
+    setRecurringTransactions(prev => prev.map(recurring => 
+      recurring.id === id ? { ...recurring, ...updates } : recurring
+    ));
+  };
+
+  const handleDeleteRecurring = (id: string) => {
+    setRecurringTransactions(prev => prev.filter(recurring => recurring.id !== id));
+  };
+
+  const handleProcessRecurring = (recurring: RecurringTransaction) => {
+    // Create a new transaction from recurring
+    const newTransaction: Transaction = {
+      id: Date.now(),
+      type: recurring.type,
+      amount: recurring.amount,
+      category: recurring.category,
+      date: new Date(),
+      notes: `${recurring.description} (Auto-generated)`
+    };
+
+    // Process the transaction
+    processTransaction(newTransaction);
+
+    // Update the recurring transaction's next due date
+    const nextDueDate = calculateNextDueDate(recurring.nextDueDate, recurring.frequency);
+    handleUpdateRecurring(recurring.id, {
+      nextDueDate,
+      lastProcessed: new Date()
+    });
+
+    toast.success(`Recurring ${recurring.type} processed: ${recurring.description}`);
+  };
+
+  // Budget management functions
+  const handleAddBudget = (budgetData: Omit<Budget, 'id' | 'spent' | 'isExceeded'>) => {
+    const newBudget: Budget = {
+      ...budgetData,
+      id: Date.now().toString(),
+      spent: 0,
+      isExceeded: false
+    };
+    setBudgets(prev => [...prev, newBudget]);
+  };
+
+  const handleUpdateBudget = (id: string, updates: Partial<Budget>) => {
+    setBudgets(prev => prev.map(budget => 
+      budget.id === id ? { ...budget, ...updates } : budget
+    ));
+  };
+
+  const handleDeleteBudget = (id: string) => {
+    setBudgets(prev => prev.filter(budget => budget.id !== id));
+  };
+
+  // Calculate monthly expenses by category for budget tracking
+  const monthlyExpensesByCategory = monthlyTransactions
+    .filter(t => t.type === 'expense')
+    .reduce((acc, t) => {
+      const existing = acc.find(item => item.category === t.category);
+      if (existing) {
+        existing.amount += t.amount;
+      } else {
+        acc.push({ category: t.category, amount: t.amount });
+      }
+      return acc;
+    }, [] as { category: string; amount: number }[]);
 
   const AnalysisModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
@@ -577,6 +732,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <Toaster position="top-right" />
       <nav className="bg-white shadow-lg sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -937,6 +1093,129 @@ export default function App() {
 
         {showProfile && (
           <ProfilePage onClose={() => setShowProfile(false)} />
+        )}
+
+        {showGoals && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold">Financial Goals</h2>
+                  <button
+                    onClick={() => setShowGoals(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+                <GoalTracker
+                  goals={goals}
+                  onAddGoal={handleAddGoal}
+                  onUpdateGoal={handleUpdateGoal}
+                  onDeleteGoal={handleDeleteGoal}
+                  currentBalance={balance}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showRecurring && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold">Recurring Transactions</h2>
+                  <button
+                    onClick={() => setShowRecurring(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+                <RecurringTransactions
+                  recurringTransactions={recurringTransactions}
+                  onAddRecurring={handleAddRecurring}
+                  onUpdateRecurring={handleUpdateRecurring}
+                  onDeleteRecurring={handleDeleteRecurring}
+                  onProcessRecurring={handleProcessRecurring}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showBudgets && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold">Budget Manager</h2>
+                  <button
+                    onClick={() => setShowBudgets(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+                <BudgetManager
+                  budgets={budgets}
+                  onAddBudget={handleAddBudget}
+                  onUpdateBudget={handleUpdateBudget}
+                  onDeleteBudget={handleDeleteBudget}
+                  monthlyExpenses={monthlyExpensesByCategory}
+                  currentMonth={`${currentYear}-${String(currentMonth + 1).padStart(2, '0')}`}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showForecast && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold">Cash Flow Forecast</h2>
+                  <button
+                    onClick={() => setShowForecast(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+                <CashFlowForecast
+                  recurringTransactions={recurringTransactions}
+                  currentBalance={balance}
+                  walletBalance={walletBalance}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showExport && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-2xl font-bold">Export Data</h2>
+                  <button
+                    onClick={() => setShowExport(false)}
+                    className="p-2 hover:bg-gray-100 rounded-full"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+                <DataExport
+                  transactions={transactions}
+                  budgets={budgets}
+                  goals={goals}
+                  loans={loans}
+                />
+              </div>
+            </div>
+          </div>
         )}
 
         {showAnalysis && <AnalysisModal onClose={() => setShowAnalysis(false)} />}

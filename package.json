@@ -10,21 +10,28 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
     "@tensorflow/tfjs": "^4.17.0",
     "chart.js": "^4.4.1",
-    "jspdf": "^2.5.1",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.19",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.2",
     "jspdf-autotable": "^3.8.2",
     "lucide-react": "^0.344.0",
+    "papaparse": "^5.5.3",
     "plaid": "^21.0.0",
+    "qrcode.react": "^3.1.0",
     "react": "^18.3.1",
+    "react-beautiful-dnd": "^13.1.1",
     "react-chartjs-2": "^5.2.0",
+    "react-datepicker": "^8.7.0",
     "react-dom": "^18.3.1",
     "react-financial-charts": "^2.0.1",
+    "react-hot-toast": "^2.6.0",
     "react-plaid-link": "^3.5.1",
     "react-qr-code": "^2.0.12",
-    "recharts": "^2.12.2",
-    "@supabase/supabase-js": "^2.39.3",
-    "qrcode.react": "^3.1.0"
+    "recharts": "^2.15.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
