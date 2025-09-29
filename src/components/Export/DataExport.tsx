@@ -22,7 +22,7 @@ const DataExport: React.FC<DataExportProps> = ({
   loans
 }) => {
   const [exportType, setExportType] = useState<'transactions' | 'budgets' | 'goals' | 'loans' | 'all'>('transactions');
-  const [format, setFormat] = useState<'csv' | 'pdf'>('csv');
+  const [exportFormat, setExportFormat] = useState<'csv' | 'pdf'>('csv');
   const [dateRange, setDateRange] = useState<'month' | 'quarter' | 'year' | 'all'>('month');
   const [isExporting, setIsExporting] = useState(false);
 
@@ -102,6 +102,7 @@ const DataExport: React.FC<DataExportProps> = ({
           }));
           
           if (format === 'csv') {
+          if (exportFormat === 'csv') {
             exportToCSV(transactionData, `transactions-${timestamp}`);
           } else {
             exportToPDF(
@@ -124,6 +125,7 @@ const DataExport: React.FC<DataExportProps> = ({
           }));
           
           if (format === 'csv') {
+          if (exportFormat === 'csv') {
             exportToCSV(budgetData, `budgets-${timestamp}`);
           } else {
             exportToPDF(
@@ -147,6 +149,7 @@ const DataExport: React.FC<DataExportProps> = ({
           }));
           
           if (format === 'csv') {
+          if (exportFormat === 'csv') {
             exportToCSV(goalData, `goals-${timestamp}`);
           } else {
             exportToPDF(
@@ -171,6 +174,7 @@ const DataExport: React.FC<DataExportProps> = ({
           }));
           
           if (format === 'csv') {
+          if (exportFormat === 'csv') {
             exportToCSV(loanData, `loans-${timestamp}`);
           } else {
             exportToPDF(
@@ -185,6 +189,7 @@ const DataExport: React.FC<DataExportProps> = ({
         case 'all':
           // Create a comprehensive report
           if (format === 'pdf') {
+          if (exportFormat === 'pdf') {
             const doc = new jsPDF();
             
             // Title page
@@ -230,6 +235,7 @@ const DataExport: React.FC<DataExportProps> = ({
       }
       
       toast.success(`Data exported successfully as ${format.toUpperCase()}!`);
+      toast.success(`Data exported successfully as ${exportFormat.toUpperCase()}!`);
     } catch (error) {
       console.error('Export error:', error);
       toast.error('Failed to export data. Please try again.');
@@ -288,9 +294,9 @@ const DataExport: React.FC<DataExportProps> = ({
           </label>
           <div className="flex space-x-2">
             <button
-              onClick={() => setFormat('csv')}
+              onClick={() => setExportFormat('csv')}
               className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium ${
-                format === 'csv'
+                exportFormat === 'csv'
                   ? 'bg-indigo-100 text-indigo-700'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
@@ -299,9 +305,9 @@ const DataExport: React.FC<DataExportProps> = ({
               CSV
             </button>
             <button
-              onClick={() => setFormat('pdf')}
+              onClick={() => setExportFormat('pdf')}
               className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium ${
-                format === 'pdf'
+                exportFormat === 'pdf'
                   ? 'bg-indigo-100 text-indigo-700'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
               }`}
@@ -363,7 +369,7 @@ const DataExport: React.FC<DataExportProps> = ({
           </div>
           <div>
             <span className="text-gray-600">Format:</span>
-            <span className="ml-2 font-medium uppercase">{format}</span>
+            <span className="ml-2 font-medium uppercase">{exportFormat}</span>
           </div>
           {exportType === 'transactions' && (
             <div>
