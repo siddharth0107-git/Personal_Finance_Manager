@@ -101,7 +101,6 @@ const DataExport: React.FC<DataExportProps> = ({
             Notes: t.notes || ''
           }));
           
-          if (format === 'csv') {
           if (exportFormat === 'csv') {
             exportToCSV(transactionData, `transactions-${timestamp}`);
           } else {
@@ -124,7 +123,6 @@ const DataExport: React.FC<DataExportProps> = ({
             Status: b.isExceeded ? 'Exceeded' : 'Within Limit'
           }));
           
-          if (format === 'csv') {
           if (exportFormat === 'csv') {
             exportToCSV(budgetData, `budgets-${timestamp}`);
           } else {
@@ -148,7 +146,6 @@ const DataExport: React.FC<DataExportProps> = ({
             Status: g.isCompleted ? 'Completed' : 'In Progress'
           }));
           
-          if (format === 'csv') {
           if (exportFormat === 'csv') {
             exportToCSV(goalData, `goals-${timestamp}`);
           } else {
@@ -173,7 +170,6 @@ const DataExport: React.FC<DataExportProps> = ({
             Description: l.description
           }));
           
-          if (format === 'csv') {
           if (exportFormat === 'csv') {
             exportToCSV(loanData, `loans-${timestamp}`);
           } else {
@@ -188,7 +184,6 @@ const DataExport: React.FC<DataExportProps> = ({
 
         case 'all':
           // Create a comprehensive report
-          if (format === 'pdf') {
           if (exportFormat === 'pdf') {
             const doc = new jsPDF();
             
@@ -234,7 +229,6 @@ const DataExport: React.FC<DataExportProps> = ({
           break;
       }
       
-      toast.success(`Data exported successfully as ${format.toUpperCase()}!`);
       toast.success(`Data exported successfully as ${exportFormat.toUpperCase()}!`);
     } catch (error) {
       console.error('Export error:', error);
