@@ -4,7 +4,6 @@ import { Transaction } from '../../types';
 import { Budget, Goal, Loan } from '../../types/extended';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { saveAs } from 'file-saver';
 import Papa from 'papaparse';
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import toast from 'react-hot-toast';
@@ -53,7 +52,12 @@ const DataExport: React.FC<DataExportProps> = ({
   const exportToCSV = (data: any[], filename: string) => {
     const csv = Papa.unparse(data);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    saveAs(blob, `${filename}.csv`);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${filename}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const exportToPDF = (data: any[], headers: string[], title: string, filename: string) => {
